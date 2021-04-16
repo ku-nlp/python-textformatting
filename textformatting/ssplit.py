@@ -108,8 +108,10 @@ def _merge_parenthesis(sentence_candidates):
     quotation_level = 0
 
     merged_sentences = []
-    _sentence = ''
-    for sentence_candidate in sentence_candidates:
+    _sentence_candidate = ''
+    while sentence_candidates:
+        sentence_candidate = sentence_candidates.pop(0)
+
         parenthesis_level += sentence_candidate.count('（') + sentence_candidate.count('(')
         parenthesis_level -= sentence_candidate.count('）') + sentence_candidate.count(')')
 
@@ -117,15 +119,23 @@ def _merge_parenthesis(sentence_candidates):
         quotation_level -= sentence_candidate.count('」') + sentence_candidate.count('”')
 
         if parenthesis_level == 0 and quotation_level == 0:
-            if _sentence:
-                sentence_candidate = _sentence + sentence_candidate
-                _sentence = ''
+            sentence_candidate = _sentence_candidate + sentence_candidate
             merged_sentences.append(sentence_candidate)
+            _sentence_candidate = ''
         else:
-            _sentence += sentence_candidate
+            if '\n' in sentence_candidate:
+                sentence_candidate, rest = sentence_candidate.split('\n', maxsplit=1)
+                sentence_candidate = _sentence_candidate + sentence_candidate
+                merged_sentences.append(sentence_candidate)
+                _sentence_candidate = ''
+                sentence_candidates.insert(0, rest)
+                parenthesis_level = 0
+                quotation_level = 0
+            else:
+                _sentence_candidate += sentence_candidate
 
-    if _sentence:
-        merged_sentences.append(_sentence)
+    if _sentence_candidate:
+        merged_sentences.append(_sentence_candidate)
     return merged_sentences
 
 
